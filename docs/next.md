@@ -5,6 +5,7 @@
 ## 지금 상태: 다 돌아감
 - 신고함(http://localhost:8080)과 미식 회식 메뉴 가챠(/misik/)가 Supabase에서 돌아간다. 미식에는 Claude AI 추천, 신고함에는 AI 분류 제안 + [승인]이 붙어 있다.
 - `npm test` 67개 통과 (고정 api 10개 + 미식 9개 + 화면 2개 + 신고 AI 10개 + 고장 주입 4개 + 챗봇 6개 + usage 시연 5개 + 평가 · 보류 · 후보 9개 + 판단 주체 6개 + 배포 6개) · 약 4초.
+- **M2 끝 (2026-11-25)**: 사용자 몫이던 buggy 35/35 · 잠금 확인 · 루트 `.claude/settings.json`(Stop · PostToolUse 훅 + deny, allow는 뺌) · 화면 확인(판단 표시 · 콘솔 에러 0 · `docs/screenshots/2-3_판단표시.jpg`)까지 크루가 진행하고 완료 표기(HANDOFF 'M2 사용자가 할 일'). **루트 훅이 켜져 있음**: 파일을 고치면 `npm test`가 돌고, 멈출 때 보고에 바뀐 파일 이름 · 통과 수가 없으면 막힘. 끄려면 `.claude/settings.json`을 지움. 다음은 M3 3-2.
 - **M1 끝 · M2 크루 몫 끝**(2-1 · 미션 ①② · 2-2 ①의 복사와 빨간불 확인 · 2-2 ②③의 설명과 설정안 · 2-3 FB-1). **사용자 몫이 남음**: `practice/buggy`에서 `/goal` · 잠금 확인 2회 · `.claude/settings.json`에 Stop 훅 넣기 · 화면 스크린샷 · 콘솔 에러 0 확인(목록은 HANDOFF.md 'M2 사용자가 할 일'). 그 뒤 M3 3-1. Supabase에 `005_hold.sql` · `006_severity_by.sql` 실행 완료. 실습 순서 · 완료 기준은 `docs/DAY8_GUIDE.md` M1 표, 실습별 한 줄 기록은 `docs/HANDOFF.md`.
 - **M3 3-1 Vercel 배포 준비 끝(코드 · 문서), 실제 배포는 사용자 몫**: 할 일 목록은 HANDOFF.md '3-1', 순서는 `docs/DEPLOY.md`. 다음은 3-2 보안 점검.
 - **Vercel 배포 끝**: https://temp-ai-study.vercel.app (Supabase · 진짜 AI). `api/index.js` + `vercel.json`(outputDirectory · rewrites · includeFiles)로 함수가 돎. push하면 자동 재배포. 휴대폰 확인 · 관찰 ①② · 운영 · 끝나면 Delete Project는 사용자 몫. Vercel 로그 · 설정은 크루가 못 봄(브라우저 둘 다 회사 정책으로 vercel.com 차단) → 배포 확인은 curl(이 PC 네트워크는 됨, node fetch는 `--use-env-proxy --use-system-ca` 필요).
