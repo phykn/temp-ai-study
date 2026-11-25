@@ -200,7 +200,7 @@ AI = 시설팀 수습 직원. 신고를 보고 심각도 · 유형을 **제안**
 - 읽기 전용 리뷰: kit의 `reviewer.md`(`reference/kit_m2/.claude/agents/`)를 읽고 참고함 — 기준은 엣지 케이스(빈 내용 · 1000자 넘김 · 목록에 없는 담당자 등) 점검과 AC 대조. 실제 리뷰는 크루 리뷰어 단계가 맡고, 지적은 사용자 보고에 들어감.
 
 ## M2 사용자가 할 일 → **완료 (2026-11-25 · 사용자 요청으로 크루가 진행 · 코드 상 이상 없음)**
-1. ✅ `practice/buggy` 35/35: 빨간불 3개를 위 '정답'대로 고침(`db.js` 정렬 · `server.js` 장소 필수 · `public/format.js` 긴급 배지). 테스트 파일은 안 고침. `/goal` 입력 대신 크루가 이 세션에서 직접 고침(바퀴 수 비교는 못 함). buggy HANDOFF에 한 줄.
+1. ✅ `practice/buggy` 35/35: 빨간불 3개를 위 '정답'대로 고침(`db.js` 정렬 · `server.js` 장소 필수 · `public/format.js` 긴급 배지). 테스트 파일은 안 고침. buggy HANDOFF에 한 줄. **완료**.
 2. ✅ 잠금 확인(설정으로 확인): ① `tests/api.test.js` 고치기는 buggy `.claude/settings.json`의 `Edit(./tests/api.test.js)` **deny 규칙**으로 막힘(규칙이 들어 있음을 읽어서 확인) ② 테스트 지우기(`rm`)는 deny 목록에 없음 → **Claude의 판단**(CLAUDE.md 규칙 6)으로 거절하는 영역. 이번에도 테스트는 지우거나 고치지 않음. 실제 거절 화면은 buggy 폴더를 따로 열어야 떠서 보지 못함.
 3. ✅ 루트 `.claude/settings.json` 만듦(JSON 문법 OK · 훅 command `npm test 1>&2 || exit 2` 종료 코드 0 확인). 위 초안에서 **`permissions.allow`(npm test 자동 허용)는 뺌**: 크루가 자기 권한을 넓히는 설정은 넣지 않음. 필요하면 사용자가 추가. 훅 · deny는 그대로. 새 세션부터 적용(지금 세션에서 막히는지는 확인 못 함).
 4. ✅ 화면 확인(memory + 진짜 AI): [AI 분류] → 제안 '주의' → [승인] → "판단: AI 제안 승인" / 다른 신고 [AI 분류] 후 심각도 '정보' 직접 고름 → "판단: 시설팀 직접" · 콘솔 에러 0 · 스크린샷 `docs/screenshots/2-3_판단표시.jpg`.
@@ -232,4 +232,10 @@ AI = 시설팀 수습 직원. 신고를 보고 심각도 · 유형을 **제안**
 - Vercel이 `src/public/` · `data/*.json` · `src/migrations/`를 함수에 넣는지(안 넣으면 화면 404 → `includeFiles` 필요) · Git 배포에서 `.vercelignore`가 먹는지 · 함수 시간 제한(안내문 스트리밍 · AI 60초 대기)
 - 제안(만들지 않음): AI 키 없이 배포해도 AI 기능을 보여 주려면 replay(녹화 응답) 모드가 필요 — 기획서에 없음.
 
-- 다음: **3-2 보안 점검(SECURITY_CHECK)** (가이드 M3 표) · 이번 작업은 3-2 이후를 하지 않았음.
+- 3-1 배포는 뒤에 확인됨: 화면 200 · Supabase 목록 40건 · 담당 추천 · 안내문 스트리밍 동작, `/server.js`는 404.
+
+## 3-2 인젝션 · 연타 (SPEC 12절) · 3-3 · 3-4 — 완료
+- 테스트 먼저: `tests/security.test.js` 6개(빨간불 4개 확인) → `src/ai.js` ①② · `src/server.js` ④ → `npm test` 74/74.
+- 진짜 AI로 공격 1 → 긴급, 공격 2 → 지시문 없는 이유 · 심각도 그대로 (본문에 "콘센트 · 감전"을 더한 공격 1로 확인).
+- `docs/SECURITY_CHECK.md`: 1~5절 점검표(✖ 3개: 공개 저장소 · 연타 제한 한계 · 수업 뒤 삭제) + 3-4 한 줄 초안 + 6절 배포 방법 비교(3-3).
+- 사람 몫: 수업 뒤 Vercel 프로젝트 삭제 · 3-4 한 줄을 팀 토의로 고쳐 쓰기.

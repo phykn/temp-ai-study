@@ -77,7 +77,7 @@ function call(base, method, url, body) {
 // 서버 켜기: 켜진 주소를 돌려줌. DB_MODE=memory는 spawn이 주고, --env-file은 이미 있는 값을 덮어쓰지 않으므로 .env가 바꾸지 못함
 async function startServer() {
   const port = 19500 + Math.floor(Math.random() * 400);
-  const env = { ...process.env, PORT: String(port), DB_MODE: "memory" };
+  const env = { ...process.env, PORT: String(port), DB_MODE: "memory", AI_RATE_LIMIT: "off" }; // 평가는 한꺼번에 여러 번 부르므로 연타 제한을 끔
   delete env.AI_FAULT; // 고장 주입 · 짧은 대기 시간이 평가에 섞이지 않게
   delete env.AI_TIMEOUT_MS;
   const child = spawn(process.execPath, [...process.execArgv, "server.js"], { cwd: ROOT, env, stdio: "ignore" });

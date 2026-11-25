@@ -31,6 +31,30 @@ const bad = (message) => new ApiError(400, "BAD_INPUT", message);
 const notFound = (message) => new ApiError(404, "NOT_FOUND", message);
 const conflict = (message) => new ApiError(409, "CONFLICT", message);
 const aiDown = (message) => new ApiError(503, "AI_UNAVAILABLE", message);
+const tooMany = (message) => new ApiError(429, "TOO_MANY_REQUESTS", message);
+
+// ── 보안 ④ 연타 제한 (SPEC 12절 · AC-17) ──
+// 접속 주소마다 1분에 AI 기능 10번 · 챗봇 20번. 넘으면 429 (돈이 드는 AI만 막고, 신고 접수는 막지 않음)
+// 기록은 서버 메모리에만 있어 서버(Vercel 인스턴스)마다 따로 셈. 평가 스크립트는 AI_RATE_LIMIT=off로 끔
+const LIMITS = {
+  ai: { max: 10, message: "AI 기능은 1분에 10번까지입니다", path: /^\/api\/(reports\/\d+\/(classify|recommend|notice\/draft)|menus\/filter)$/ },
+  chat: { max: 20, message: "챗봇은 1분에 20번까지입니다", path: /^\/api\/chat$/ },
+};
+const hits = new Map(); // "종류:주소" → 최근 1분 안의 요청 시각들
+
+function limitAi(req, pathname) {
+  if (req.method !== "POST" || process.env.AI_RATE_LIMIT === "off") return;
+  const kind = Object.keys(LIMITS).find((k) => LIMITS[k].path.test(pathname));
+  if (!kind) return; // AI가 아닌 주소는 제한 없음
+  // 접속 주소: Vercel은 x-forwarded-for 머리말에 진짜 주소를 넣어 줌 (없으면 직접 연결한 주소)
+  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket?.remoteAddress || "unknown";
+  const key = `${kind}:${ip}`;
+  const now = Date.now();
+  const recent = (hits.get(key) || []).filter((t) => now - t < 60_000); // 1분 지난 기록은 버림
+  if (recent.length >= LIMITS[kind].max) throw tooMany(LIMITS[kind].message);
+  recent.push(now);
+  hits.set(key, recent);
+}
 
 // 글자 칸 꺼내기: 앞뒤 빈칸을 빼고, 글자가 아니면 빈칸으로 본다
 const text = (v) => (typeof v === "string" ? v.trim() : "");
@@ -332,7 +356,8 @@ export default async function handle(req, res) {
 
   console.log(`[화면→API] ${req.method} ${url.pathname}${url.search}`);
   try {
-    const draftId = url.pathname.match(/^\/api\/reports\/(\d+)\/notice\/draft$/)?.[1];
+    limitAi(req, url.pathname); // AI 주소면 연타 검사 (넘으면 429)
+    const draftId =url.pathname.match(/^\/api\/reports\/(\d+)\/notice\/draft$/)?.[1];
     if (draftId && req.method === "POST") return await streamNoticeDraft(res, Number(draftId)); // 스트리밍은 따로
     const [status, data] = await route(req, url);
     send(res, status, "application/json; charset=utf-8", JSON.stringify(data));

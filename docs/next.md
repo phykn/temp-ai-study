@@ -4,7 +4,8 @@
 
 ## 지금 상태: 다 돌아감
 - 신고함(http://localhost:8080)과 미식 회식 메뉴 가챠(/misik/)가 Supabase에서 돌아간다. 미식에는 Claude AI 추천, 신고함에는 AI 분류 제안 + [승인]이 붙어 있다.
-- `npm test` 67개 통과 (고정 api 10개 + 미식 9개 + 화면 2개 + 신고 AI 10개 + 고장 주입 4개 + 챗봇 6개 + usage 시연 5개 + 평가 · 보류 · 후보 9개 + 판단 주체 6개 + 배포 6개) · 약 4초.
+- `npm test` 74개 통과 (고정 api 10개 + 미식 9개 + 화면 2개 + 신고 AI 10개 + 고장 주입 4개 + 챗봇 6개 + usage 시연 5개 + 평가 · 보류 · 후보 9개 + 판단 주체 6개 + 배포 7개 + 보안 6개) · 약 10초.
+- **M3 끝 (2026-11-25)**: 3-1 배포 확인됨(https://temp-ai-study.vercel.app · GitHub `phykn/temp-ai-study` main push로 자동 배포). 3-2 인젝션 · 연타 방어 4겹(SPEC 12절 · `tests/security.test.js`) · 3-3 배포 방법 비교 · 3-4 팀 도입 한 줄 초안은 `docs/SECURITY_CHECK.md`. 남은 사람 몫: 수업 뒤 Vercel 프로젝트 삭제 · 3-4 한 줄을 토의로 고쳐 쓰기.
 - **M2 끝 (2026-11-25)**: 사용자 몫이던 buggy 35/35 · 잠금 확인 · 루트 `.claude/settings.json`(Stop · PostToolUse 훅 + deny, allow는 뺌) · 화면 확인(판단 표시 · 콘솔 에러 0 · `docs/screenshots/2-3_판단표시.jpg`)까지 크루가 진행하고 완료 표기(HANDOFF 'M2 사용자가 할 일'). **루트 훅이 켜져 있음**: 파일을 고치면 `npm test`가 돌고, 멈출 때 보고에 바뀐 파일 이름 · 통과 수가 없으면 막힘. 끄려면 `.claude/settings.json`을 지움. 다음은 M3 3-2.
 - **M1 끝 · M2 크루 몫 끝**(2-1 · 미션 ①② · 2-2 ①의 복사와 빨간불 확인 · 2-2 ②③의 설명과 설정안 · 2-3 FB-1). **사용자 몫이 남음**: `practice/buggy`에서 `/goal` · 잠금 확인 2회 · `.claude/settings.json`에 Stop 훅 넣기 · 화면 스크린샷 · 콘솔 에러 0 확인(목록은 HANDOFF.md 'M2 사용자가 할 일'). 그 뒤 M3 3-1. Supabase에 `005_hold.sql` · `006_severity_by.sql` 실행 완료. 실습 순서 · 완료 기준은 `docs/DAY8_GUIDE.md` M1 표, 실습별 한 줄 기록은 `docs/HANDOFF.md`.
 - **M3 3-1 Vercel 배포 준비 끝(코드 · 문서), 실제 배포는 사용자 몫**: 할 일 목록은 HANDOFF.md '3-1', 순서는 `docs/DEPLOY.md`. 다음은 3-2 보안 점검.
@@ -115,6 +116,12 @@
    - `src/server.js`: `handle`(export default)과 `start()`로 나눔. 루트 `server.js`는 `if (import.meta.main) start(); export default handle;`. `vercel.json`(icn1) · `.vercelignore` · `db.js`의 `sqliteFile`(VERCEL이면 임시 폴더) · `docs/DEPLOY.md`(환경변수 이름 표 · 올릴 파일 목록 · 관찰 ①② · 운영 · 삭제 · 막혔을 때). README에 DEPLOY 한 줄.
    - 테스트: `tests/deploy.test.js` 6개. `npm test` 67/67. 기존 61개는 고치지 않음. `node server.js` · `npm start` 첫 화면 200, import만 하면 서버가 안 켜지고 종료됨(확인함).
    - 함정: **db.js · ai.js는 불러오는 순간 환경변수를 읽고 DB를 엶** → 테스트는 `DB_MODE=memory`를 먼저 두고 dynamic import. Vercel에서 환경변수가 없으면 화면까지 500. **GitHub 웹 업로드는 `.gitignore`를 따르지 않음**(`.env` · `data/app.db`를 직접 빼야 함, `.vercelignore`가 Git 배포에서 먹는지는 확인 못 함). 사용자가 할 일 목록은 HANDOFF.md.
+
+18. M3 3-2 보안 (SPEC 12절 · AC-16 · AC-17) · 3-3 · 3-4 문서
+   - `src/ai.js`: ① `reportBlock`(신고 글 속 `<report>` 태그를 지우고 서버가 한 번만 감쌈 · 분류 · 추천 · 안내문 공통) + 세 프롬프트 끝에 보안 규칙 ② `hasDirective`(이유에 "승인하세요" 등 지시문이 섞이면 답을 버림 → 503). ③은 원래 있던 구조(AI는 `ai_*`만).
+   - `src/server.js`: ④ `limitAi` — 접속 주소(`x-forwarded-for` 첫 값, 없으면 소켓 주소)마다 1분에 AI 10번 · 챗봇 20번, 넘으면 429 `TOO_MANY_REQUESTS`. `handle` 한 곳에서 검사. `eval/run_eval.js`는 `AI_RATE_LIMIT=off`로 끔(평가는 연달아 부르므로).
+   - 진짜 AI 확인(memory 서버 · 8095): 공격 1 → 긴급(지시 무시), 공격 2 → 이유에 지시문 없음 · 심각도 · 상태 그대로.
+   - 함정: 연타 기록은 서버 메모리 → Vercel 인스턴스마다 따로 셈 · 로컬에서는 머리말을 흉내 낼 수 있음(SECURITY_CHECK 3절 ✖).
 
 ## 사용성 정리 (거슬린 점 → 고친 것)
 - 공통: 서버가 꺼졌거나 이상한 답을 주면 영어 오류(`Failed to fetch`, `Unexpected token`)가 그대로 보였음 → `api()`가 한국어 안내("서버에 연결하지 못했습니다…", "서버를 다시 켜 주세요 (npm start)")를 던짐.
