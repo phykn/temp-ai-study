@@ -208,6 +208,8 @@ AI = 시설팀 수습 직원. 신고를 보고 심각도 · 유형을 **제안**
 
 ## 3-1 Vercel 배포 준비 (2026-11-25 · 코드만, **실제 배포는 확인 못 함**)
 
+- 진행: GitHub https://github.com/phykn/temp-ai-study `main`에 push 끝(56개 파일 · 공개 저장소 · `.env` · `app.db` · `reference/` · `practice/` · `.crew/` 제외 · 키 검사함 · push 전 `npm test` 67/67). **Vercel Import · 환경변수 · Deploy는 사용자가 직접**: 크루의 내장 브라우저는 회사 정책으로 vercel.com이 막혀 있음(이 PC 네트워크로는 vercel.com 200).
+
 | 실습 | 한 일 | 확인 |
 |---|---|---|
 | 3-1 | `src/server.js`가 `handle`(요청 처리)과 `start()`(서버 켜기)를 내보냄 · 루트 `server.js`는 `if (import.meta.main) start(); export default handle;` · `vercel.json`(icn1) · `.vercelignore` · `db.js`의 `sqliteFile`(VERCEL이면 임시 폴더) · `docs/DEPLOY.md` · SPEC 11절 · AC-D1 | `tests/deploy.test.js` 6개 · `npm test` 67/67 · `node server.js` · `npm start` 첫 화면 200 · import만으로 서버 안 켜짐(종료됨) |

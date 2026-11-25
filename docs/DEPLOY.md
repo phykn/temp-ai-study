@@ -17,6 +17,9 @@
 
 ## 1. GitHub에 올리기
 
+> **끝남 (2026-11-25)**: https://github.com/phykn/temp-ai-study (`main` · 56개 파일 · **공개 저장소**) 에 `git push`로 올림. `.gitignore`가 `.env` · `data/app.db` · `reference/` · `practice/` · `.crew/`를 뺌. 다음에 고친 것은 `git add -A` → `git commit` → `git push`로 올리면 Vercel이 새로 배포함.
+> 아래는 웹 업로드로 할 때의 방법(참고).
+
 1. GitHub → New repository → **Private**.
 2. **Add file → Upload files**로 아래 **올릴 것만** 끌어 넣습니다. 웹 업로드는 `.gitignore`를 따르지 않으므로 직접 골라야 합니다.
 
