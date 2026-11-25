@@ -24,6 +24,16 @@ test("AC-D1 server.js는 Vercel 입구 함수를 기본으로 내보낸다", asy
   assert.ok(!read("server.js").includes("createServer"), "루트 server.js에는 로직이 없음");
 });
 
+test("AC-D1 Vercel 함수 api/index.js는 같은 입구 함수를 내보내고, 모든 주소가 그리로 간다", async () => {
+  const fn = await import("../api/index.js");
+  const root = await import("../server.js");
+  assert.equal(fn.default, root.default, "로컬과 Vercel이 같은 handle을 씀");
+  const config = JSON.parse(read("vercel.json"));
+  assert.equal(config.outputDirectory, "src/public", "정적 파일은 화면 폴더만 (루트의 코드 파일이 그대로 보이지 않게)");
+  assert.deepEqual(config.rewrites, [{ source: "/(.*)", destination: "/api" }]);
+  assert.match(config.functions["api/index.js"].includeFiles, /data\/\*\.json/, "함수가 읽는 시드 json을 함께 넣음");
+});
+
 test("AC-D1 입구 함수 하나가 화면과 API를 모두 처리한다", async () => {
   const { default: handle } = await import("../server.js");
   const server = http.createServer(handle).listen(0);
