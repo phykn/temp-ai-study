@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>회식 메뉴 가챠</title>
+<link rel="icon" href="data:,">
+<!-- 글꼴을 CSS보다 먼저 받기 시작 (주소는 @font-face와 같아야 두 번 안 받음) -->
+<link rel="preload" href="/fonts/Galmuri11.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Galmuri11-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* 글꼴: Galmuri11 (SIL OFL · ../fonts/ofl.md) */
+@font-face { font-family: Galmuri11; font-weight: 400; src: url("../fonts/Galmuri11.woff2") format("woff2"); }
+@font-face { font-family: Galmuri11; font-weight: 700; src: url("../fonts/Galmuri11-Bold.woff2") format("woff2"); }
+:root {
+  /* 색: 양피지 · 나무 톤 */
+  --bg: #f3d9a4; --panel: #fbe7bd; --field: #fff5dc; --sheet: #fff9e8; --line: #e2bb85;
+  --frame: #c98a4b; --frame-dark: #5c3213; --wood: #b8763b;
+  --text: #4a2a12; --heading: #5c3213; --muted: #94683f; --link: #3f78a8;
+  --action: #79b86a; --action-hover: #86c477; --action-edge: #4f8a44;
+  --ok: #2f5a28; --ok-soft: #c9ebbb; --ok-edge: #4f8a44;
+  --bad: #7a2416; --bad-soft: #f4b9a8; --bad-edge: #b8432f;
+  /* 등급 색: R 파랑 · SR 빨강 · SSR 금색 */
+  --r: #3f78a8; --r-soft: #bfe1f2;
+  --sr: #b8432f; --sr-soft: #f4b9a8;
+  --ssr: #b8861f; --ssr-soft: #fff0b8;
+  --stage: #4a2a12; --on-stage: #fff5dc;
+  --font-ui: Galmuri11, "Malgun Gothic", sans-serif;
+  --font-text: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --shadow: 0 4px 12px rgba(40, 22, 8, .35);
+  /* 크기: 입력 칸 · 버튼은 모두 같은 높이, 글자는 12 · 13 · 14 · 16 · 20 다섯 단계 */
+  --h: 34px; --h-sm: 28px;
+  --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px;
+  --gap: 8px; --pad: 16px; --radius: 8px; --radius-sm: 6px;
+  --w-side: 460px; --w-stage: 340px;
+  --t-shake: .9s; --t-flip: .7s;
+}
+@media (prefers-reduced-motion: reduce) { :root { --t-shake: .01s; --t-flip: .01s; } }
+* { box-sizing: border-box; }
+html { scrollbar-gutter: stable; }
+body { margin: 0; font-family: var(--font-ui); font-size: var(--fs-md); color: var(--text); background: var(--bg); }
+
+/* 위쪽: 제목 · 화면 이동 · 자동 로그인 이름 */
+header { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 24px; border-bottom: 3px solid var(--frame); }
+header h1 { margin: 0; color: var(--heading); font-size: var(--fs-xl); }
+.nav { display: flex; gap: var(--gap); }
+.nav a { padding: 4px 10px; color: var(--muted); font-size: var(--fs-sm); text-decoration: none; border: 2px solid transparent; border-radius: var(--radius-sm); }
+.nav a:hover { color: var(--text); background: var(--field); }
+.nav a.on { color: var(--heading); font-weight: 700; border-color: var(--frame); background: var(--panel); }
+.who { margin-left: auto; color: var(--muted); font-size: var(--fs-sm); }
+
+/* 두 칸: 왼쪽 뽑기 무대 + 최근 뽑기 · 오른쪽 AI 추천 + 메뉴 */
+main { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: var(--pad); padding: var(--pad); }
+.alert { position: fixed; top: 64px; left: 50%; z-index: 2; transform: translateX(-50%); width: min(calc(100% - 32px), 600px); margin: 0; box-shadow: var(--shadow); padding: var(--gap) 12px; color: var(--bad); background: var(--bad-soft); border: 2px solid var(--bad-edge); border-radius: var(--radius-sm); font-size: var(--fs-sm); }
+.alert:empty { display: none; }
+.alert { cursor: pointer; } /* 누르면 닫힘 */
+.panel { display: flex; flex-direction: column; gap: 12px; padding: var(--pad); background: var(--panel); border: 3px solid var(--frame); border-radius: var(--radius); }
+.panel h2 { margin: 0; color: var(--heading); font-size: var(--fs-lg); }
+.left, .side { display: flex; flex-direction: column; gap: var(--pad); max-width: 100%; }
+.left { width: var(--w-stage); }
+.side { width: var(--w-side); contain: size; } /* 오른쪽 칸 높이는 왼쪽 칸을 따라감 (메뉴가 많아도 안 늘어남) */
+.side .menu-panel { flex: 1; min-height: 0; } /* 메뉴 상자가 왼쪽 칸과 같은 높이까지 늘어남 */
+.title-row { display: flex; align-items: baseline; gap: var(--gap); }
+
+/* 입력 칸 · 버튼: 높이 · 글자 크기 통일 */
+input, select, button { height: var(--h); font: inherit; font-size: var(--fs-md); border-radius: var(--radius-sm); }
+input, select { padding: 0 10px; color: var(--text); background: var(--field); border: 2px solid var(--wood); }
+input { font-family: var(--font-text); }
+input::placeholder { color: var(--muted); }
+input:focus, select:focus { outline: none; border-color: var(--frame-dark); }
+button { padding: 0 14px; color: #fff; background: var(--action); border: 2px solid var(--action-edge); font-weight: 700; cursor: pointer; white-space: nowrap; }
+button:hover:enabled { background: var(--action-hover); }
+button:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+button:disabled { cursor: default; opacity: .5; }
+button.ghost { color: var(--muted); background: var(--field); border-color: var(--wood); font-weight: 400; }
+button.ghost:hover:enabled { color: var(--text); background: var(--sheet); }
+.inline { display: flex; gap: var(--gap); }
+.inline input { flex: 1; min-width: 0; }
+.field-error, .filter-msg { margin: 0; font-size: var(--fs-sm); }
+.field-error { margin-left: auto; color: var(--bad); } /* 제목 줄 오른쪽에 떠서 아래 칸을 밀지 않음 */
+.filter-msg { color: var(--muted); }
+.empty { margin: 0; padding: 20px 0; color: var(--muted); text-align: center; }
+
+/* 등급 배지: 모두 같은 너비 */
+.badge { flex: none; width: 44px; padding: 1px 0; border: 2px solid currentColor; border-radius: 4px; font-size: var(--fs-xs); font-weight: 700; text-align: center; }
+.badge.R { color: var(--r); background: var(--r-soft); }
+.badge.SR { color: var(--sr); background: var(--sr-soft); }
+.badge.SSR { color: var(--ssr); background: var(--ssr-soft); }
+
+/* 뽑기 무대: 카드 흔들기 → 누르면 뒤집기 */
+.stage { align-items: center; }
+.scene { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 420px; overflow: hidden; perspective: 800px; background: var(--stage); border: 3px solid var(--frame-dark); border-radius: var(--radius); }
+.scene-hint { position: absolute; bottom: var(--pad); margin: 0; color: var(--on-stage); font-size: var(--fs-md); font-weight: 700; }
+.scene-hint.blink { animation: blink 1s ease-in-out infinite; }
+.card { position: relative; width: 160px; height: 232px; padding: 0; background: none; border: 0; border-radius: var(--radius); transform-style: preserve-3d; transition: transform var(--t-flip) ease; }
+.card:hover:enabled, .card:disabled { background: none; opacity: 1; }
+.card.flipped { transform: rotateY(180deg); }
+.card.shaking { animation: shake var(--t-shake) ease-in-out; }
+.card.ready { cursor: pointer; animation: pulse 1s ease-in-out infinite; }
+.face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gap); border: 4px solid var(--panel); border-radius: var(--radius); backface-visibility: hidden; box-shadow: var(--shadow); }
+.back { color: var(--panel); background: repeating-linear-gradient(45deg, var(--wood), var(--wood) 10px, var(--frame) 10px, var(--frame) 20px); font-size: 28px; }
+.back span { display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; background: var(--stage); border: 4px solid var(--panel); border-radius: 50%; }
+.front { transform: rotateY(180deg); background: var(--sheet); border-color: var(--tone, var(--frame)); }
+.front.R { --tone: var(--r); } .front.SR { --tone: var(--sr); } .front.SSR { --tone: var(--ssr); }
+.front .grade { color: var(--tone); font-size: 28px; font-weight: 700; }
+.front .stars { color: var(--tone); letter-spacing: 2px; }
+.front .name { padding: 0 12px; color: var(--heading); font-size: var(--fs-lg); font-weight: 700; text-align: center; word-break: keep-all; }
+.result { width: 100%; height: 24px; margin: 0; overflow: hidden; color: var(--heading); font-size: var(--fs-lg); font-weight: 700; line-height: 24px; text-align: center; white-space: nowrap; text-overflow: ellipsis; }
+.draw-btn { width: 100%; }
+
+/* AI 추천 상자: 늘 같은 높이, 길면 안에서 스크롤 */
+.rec-box { height: 120px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--frame) transparent; margin: 0; padding: 10px 12px; list-style: none; background: var(--field); border: 2px dashed var(--line); border-radius: var(--radius-sm); font-size: var(--fs-sm); line-height: 1.6; }
+.rec-box ul { margin: 0; padding: 0; list-style: none; }
+.rec-box li:first-child { color: var(--ok); font-weight: 700; }
+
+/* 메뉴 · 최근 뽑기 목록: 줄마다 같은 칸 너비로 정렬 */
+.menu-list, .history-list { margin: 0; padding: 0 4px 0 0; list-style: none; overflow-y: auto; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--frame) transparent; }
+/* 높이를 고정해 화면 크기가 안 바뀌게 · 넘치면 상자 안에서 스크롤 */
+.menu-list { flex: 1; min-height: 0; }
+.history-list { height: 200px; }
+.menu-list > :first-child, .history-list > :first-child { border-top: 0; }
+.menu-item, .history-item { display: flex; align-items: center; gap: var(--gap); min-height: 40px; padding: 4px 0; border-top: 2px solid var(--line); }
+.menu-name, .history-name { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.chance { flex: none; width: 48px; color: var(--muted); font-size: var(--fs-xs); text-align: right; font-variant-numeric: tabular-nums; }
+.vote, .remove { flex: none; height: var(--h-sm); padding: 0; color: var(--muted); background: none; border: 2px solid transparent; font-size: var(--fs-xs); font-weight: 400; }
+.vote { width: 48px; }
+.remove { width: var(--h-sm); font-size: var(--fs-lg); }
+.vote.up:hover:enabled { color: var(--ok); background: var(--ok-soft); border-color: var(--ok-edge); }
+.vote.down:hover:enabled, .remove:hover:enabled { color: var(--bad); background: var(--bad-soft); border-color: var(--bad-edge); }
+.menu-item.out .menu-name { text-decoration: line-through; }
+.history-meta { flex: none; color: var(--muted); font-size: var(--fs-xs); white-space: nowrap; }
+
+@media (max-width: 860px) {
+  /* 두 칸이 위아래로 쌓이면 오른쪽 칸은 제 높이대로 · 메뉴 목록은 400px 고정 */
+  .side { contain: none; }
+  .menu-list { flex: none; height: 400px; }
+}
+@media (max-width: 600px) {
+  header { gap: 8px; padding: 0 12px; }
+  header h1 { font-size: var(--fs-lg); }
+  .who { display: none; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0) scale(1); }
+  20% { transform: rotate(-6deg) scale(1.04); }
+  40% { transform: rotate(6deg) scale(1.08); }
+  60% { transform: rotate(-4deg) scale(1.04); }
+  80% { transform: rotate(4deg) scale(1.02); }
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>회식 메뉴 가챠</h1>
+  <nav class="nav"><a href="/">시설 신고함</a><a href="/misik/" class="on">회식 메뉴 가챠</a></nav>
+  <span class="who" id="who"></span>
+</header>
+
+<main>
+  <p class="alert" id="alert" role="alert"></p>
+
+  <div class="left">
+  <!-- 뽑기 무대 -->
+  <section class="panel stage" aria-label="카드 뽑기">
+    <div class="scene">
+      <button type="button" class="card" id="card" disabled aria-label="카드">
+        <div class="face back"><span>?</span></div>
+        <div class="face front" id="front"></div>
+      </button>
+      <p class="scene-hint" id="hint"></p>
+    </div>
+    <p class="result" id="result" role="status">불러오는 중…</p>
+    <button type="button" class="draw-btn" id="draw" disabled>뽑기</button>
+  </section>
+
+  <!-- 최근 뽑기 -->
+  <section class="panel" aria-label="최근 뽑기">
+    <h2>최근 뽑기</h2>
+    <ul class="history-list" id="draws"></ul>
+  </section>
+  </div>
+
+  <div class="side">
+    <!-- AI 추천 (SPEC_MISIK AC-08) -->
+    <section class="panel" aria-label="AI 추천">
+      <h2>AI 추천</h2>
+      <form class="inline" id="filter">
+        <input id="condition" placeholder="예: 갑각류 알레르기, 해장하고 싶음" aria-label="조건" maxlength="200">
+        <button id="filter-btn">AI 추천</button>
+        <button type="button" class="ghost" id="clear" disabled>지우기</button>
+      </form>
+      <div class="rec-box">
+        <p class="filter-msg" id="filter-msg" role="status"></p>
+        <ul id="recommended" aria-label="추천 메뉴"></ul>
+      </div>
+    </section>
+
+    <!-- 메뉴 목록 -->
+    <section class="panel menu-panel" aria-label="메뉴 목록">
+      <div class="title-row">
+        <h2 id="menu-title">메뉴</h2>
+        <p class="field-error" id="add-error" role="alert"></p>
+      </div>
+      <form class="inline" id="add">
+        <input id="name" placeholder="메뉴 이름" aria-label="메뉴 이름" maxlength="30">
+        <select id="grade" aria-label="등급"><option>R</option><option>SR</option><option>SSR</option></select>
+        <button>추가</button>
+      </form>
+      <ul class="menu-list" id="menus"></ul>
+    </section>
+  </div>
+</main>
+
+<script>
+  let menus = [];
+  let grades = [];
+  let draws = [];
+  let phase = "idle"; // idle(대기) → shaking(흔들림) → ready(누르면 뒤집힘) → result(결과)
+  let winner = null;  // 서버가 뽑은 메뉴
+  let recommended = null;  // null=조건 없음, 배열=AI가 추천한 메뉴 [{ id, name, reason }]
+
+  let shaken = false;  // 카드 흔들기가 끝났는지
+  let drawn = false;   // 서버 뽑기 응답이 왔는지 (둘 다 되어야 카드가 뒤집힐 수 있음)
+  let aiBusy = false;  // AI 답을 기다리는 중
+  const BAD_RESPONSE = "서버 응답이 예상과 달라요. 서버를 다시 켜 주세요 (npm start)";
+  const HINT = "조건을 쓰면 AI가 추천한 메뉴와 이유가 여기 나와요";
+
+  const $ = (id) => document.getElementById(id);
+  // 사용자가 쓴 글자를 HTML로 해석하지 않게 바꿈
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const gradeOf = (g) => grades.find((x) => x.grade === g) || { weight: 0, stars: 1 };
+
+  // 서버에 부탁하기. 실패하면 한국어 문장으로 오류를 던짐 (서버가 보낸 문장이 있으면 그대로)
+  async function api(method, url, body) {
+    let res;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch {
+      throw new Error("서버에 연결하지 못했습니다. 서버가 켜져 있는지 확인해 주세요");
+    }
+    const data = await res.json().catch(() => {
+      throw new Error("서버 응답을 읽지 못했습니다. 서버를 다시 켜 주세요 (npm start)");
+    });
+    if (!res.ok) throw new Error(data?.error?.message || "요청이 실패했습니다");
+    return data;
+  }
+
+  const isOut = (m) => recommended !== null && !recommended.some((x) => x.id === m.id); // 추천 밖 = 취소선
+  const remaining = () => menus.filter((m) => !isOut(m)); // 뽑기 후보 (추천이 있으면 추천 메뉴만)
+
+  // 남은 메뉴별 뽑힐 확률(%) · 소수 첫째 자리까지, 합이 꼭 100.0이 되게 남는 0.1을 나눠 줌
+  function chances() {
+    const pool = remaining();
+    const total = pool.reduce((sum, m) => sum + gradeOf(m.grade).weight, 0);
+    const raw = pool.map((m) => ({ id: m.id, tenths: total ? (gradeOf(m.grade).weight / total) * 1000 : 0 }));
+    const out = new Map(raw.map((r) => [r.id, Math.floor(r.tenths)]));
+    let left = total ? 1000 - [...out.values()].reduce((a, b) => a + b, 0) : 0;
+    raw
+      .sort((a, b) => (b.tenths % 1) - (a.tenths % 1))
+      .forEach((r) => { if (left > 0) { out.set(r.id, out.get(r.id) + 1); left--; } });
+    return new Map([...out].map(([id, t]) => [id, (t / 10).toFixed(1)]));
+  }
+
+  // "방금 · 3분 전 · 2시간 전 · 1일 전"
+  function timeAgo(iso) {
+    const sec = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000));
+    if (sec < 60) return "방금";
+    if (sec < 3600) return `${Math.floor(sec / 60)}분 전`;
+    if (sec < 86400) return `${Math.floor(sec / 3600)}시간 전`;
+    return `${Math.floor(sec / 86400)}일 전`;
+  }
+
+  function renderMenus() {
+    const pct = chances();
+    $("menu-title").textContent = `메뉴 ${menus.length}개`;
+    $("menus").innerHTML = menus.length
+      ? menus.map((m) => `
+          <li class="menu-item${isOut(m) ? " out" : ""}">
+            <span class="badge ${m.grade}">${m.grade}</span>
+            <span class="menu-name" title="${esc(m.name)}">${esc(m.name)}</span>
+            <span class="chance">${isOut(m) ? "제외" : pct.get(m.id) + "%"}</span>
+            <button type="button" class="vote up" data-vote="1" data-id="${m.id}" title="좋아요">👍 ${m.likes}</button>
+            <button type="button" class="vote down" data-vote="-1" data-id="${m.id}" title="싫어요">👎 ${m.dislikes}</button>
+            <button type="button" class="remove" data-remove="${m.id}" aria-label="${esc(m.name)} 삭제">×</button>
+          </li>`).join("")
+      : `<p class="empty">메뉴를 추가하세요</p>`;
+    // 추천 상자: AI가 추천한 메뉴와 이유
+    $("recommended").innerHTML = recommended?.length
+      ? `<li><b>추천 메뉴 ${recommended.length}개</b></li>` + recommended.map((x) => `<li>${esc(x.name)} — ${esc(x.reason)}</li>`).join("")
+      : "";
+    $("clear").disabled = recommended === null || aiBusy;
+    // 추천을 안 받았으면 상자에 안내 문장
+    if (recommended === null && !$("filter-msg").textContent) $("filter-msg").textContent = HINT;
+    renderStage();
+  }
+
+  function renderDraws() {
+    $("draws").innerHTML = draws.length
+      ? draws.map((d) => `
+          <li class="history-item">
+            <span class="badge ${d.grade}">${d.grade}</span>
+            <span class="history-name" title="${esc(d.menu_name)}">${esc(d.menu_name)}</span>
+            <span class="history-meta">${esc(d.user_name)} · ${timeAgo(d.drawn_at)}</span>
+          </li>`).join("")
+      : `<p class="empty">아직 뽑은 기록이 없습니다</p>`;
+  }
+
+  function renderStage() {
+    const card = $("card");
+    card.className = "card" + (phase === "shaking" ? " shaking" : "") + (phase === "ready" ? " ready" : "") + (phase === "result" ? " flipped" : "");
+    card.disabled = phase !== "ready";
+    $("front").className = "face front " + (winner?.grade || "");
+    $("front").innerHTML = winner
+      ? `<span class="grade">${winner.grade}</span>
+         <span class="stars">${"★".repeat(gradeOf(winner.grade).stars)}</span>
+         <span class="name">${esc(winner.name)}</span>`
+      : "";
+    $("hint").textContent = phase === "ready" ? "카드를 눌러 뒤집기!" : phase === "shaking" ? "소환 중…" : "";
+    $("hint").className = "scene-hint" + (phase === "ready" ? " blink" : "");
+    const left = remaining().length;
+    $("result").textContent = phase === "result" ? `오늘의 회식은 ${winner.name}!` : left ? "" : menus.length ? "조건에 맞는 메뉴가 없어요" : "메뉴를 넣어 주세요";
+    $("draw").textContent = phase === "result" ? "다시 뽑기" : "뽑기";
+    $("draw").disabled = !left || phase === "shaking" || phase === "ready"; // 남은 메뉴가 0개면 꺼짐
+  }
+
+  // 메뉴가 바뀌면 지난 뽑기 결과는 지움
+  function clearResult() {
+    winner = null;
+    phase = "idle";
+  }
+
+  // 화면 위쪽 오류 문장: 5초 뒤 저절로 사라지고, 누르면 바로 닫힘
+  let alertTimer;
+  function showError(message) {
+    clearTimeout(alertTimer);
+    $("alert").textContent = message;
+    if (message) alertTimer = setTimeout(() => showError(""), 5000);
+  }
+  $("alert").addEventListener("click", () => showError(""));
+
+  // 흔들기와 서버 응답이 둘 다 끝나야 카드가 눌릴 수 있게 됨
+  function readyIfDone() {
+    if (phase === "shaking" && shaken && drawn) {
+      phase = "ready";
+      renderStage();
+    }
+  }
+
+  // [뽑기]: 누르는 즉시 카드를 흔들고, 서버가 뽑은 결과가 오면 뒤집을 수 있게 됨 (흔드는 동안은 버튼이 꺼져 중복 클릭 없음)
+  $("draw").addEventListener("click", async () => {
+    showError("");
+    [phase, shaken, drawn] = ["shaking", false, false];
+    renderStage();
+    try {
+      const out = await api("POST", "/api/draws", recommended === null ? undefined : { only: recommended.map((x) => x.id) });
+      if (!out?.menu?.name || !out.draw) throw new Error(BAD_RESPONSE);
+      winner = out.menu;
+      draws = [out.draw, ...draws].slice(0, 10);
+      drawn = true;
+      renderDraws();
+      renderStage();
+      readyIfDone();
+    } catch (e) {
+      phase = "idle";
+      showError(e.message);
+      renderStage();
+    }
+  });
+  $("card").addEventListener("animationend", (e) => {
+    if (e.animationName === "shake") { shaken = true; readyIfDone(); }
+  });
+  $("card").addEventListener("click", () => {
+    phase = "result";
+    renderStage();
+  });
+
+  // 메뉴 추가: 요청하는 동안 [추가]를 끄고, 끝나면 새 줄이 보이게 함
+  $("add").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector("button");
+    btn.disabled = true;
+    try {
+      const row = await api("POST", "/api/menus", { name: $("name").value, grade: $("grade").value });
+      if (!row?.id) throw new Error(BAD_RESPONSE);
+      menus.push(row);
+      $("name").value = "";
+      $("add-error").textContent = "";
+      clearResult();
+      renderMenus();
+      document.querySelector(`[data-remove="${row.id}"]`)?.closest("li").scrollIntoView({ block: "nearest" });
+    } catch (err) {
+      $("add-error").textContent = err.message; // 서버가 보낸 문장 그대로
+    }
+    btn.disabled = false;
+    $("name").focus();
+  });
+  $("name").addEventListener("input", () => ($("add-error").textContent = ""));
+
+  // 👍 · 👎 · × (목록 안의 버튼): 요청하는 동안 누른 버튼을 끔
+  $("menus").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button");
+    if (!btn || btn.disabled) return;
+    showError("");
+    btn.disabled = true;
+    try {
+      if (btn.dataset.vote) {
+        const c = await api("POST", `/api/menus/${btn.dataset.id}/vote`, { value: Number(btn.dataset.vote) });
+        const m = menus.find((x) => x.id === c?.menu_id);
+        if (m) {
+          // 확률은 그대로라 목록 전체를 다시 그리지 않고 이 줄의 두 숫자만 바꿈
+          Object.assign(m, { likes: c.likes, dislikes: c.dislikes });
+          const li = btn.closest("li");
+          li.querySelector(".up").textContent = `👍 ${m.likes}`;
+          li.querySelector(".down").textContent = `👎 ${m.dislikes}`;
+        } else {
+          renderMenus();
+        }
+      } else if (btn.dataset.remove) {
+        await api("DELETE", `/api/menus/${btn.dataset.remove}`);
+        menus = menus.filter((m) => m.id !== Number(btn.dataset.remove));
+        if (recommended) recommended = recommended.filter((x) => x.id !== Number(btn.dataset.remove));
+        clearResult();
+        renderMenus();
+      }
+    } catch (err) {
+      showError(err.message);
+    }
+    btn.disabled = false;
+  });
+
+  // [AI 추천]: 서버가 Claude에게 물어 조건에 맞는 메뉴를 받아 옴. AI가 멈춰도 뽑기는 그대로 됨
+  $("filter").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    // 기다리는 동안 다른 칸을 못 누르게 하고, 1초마다 걸린 시간을 보여 줌
+    aiBusy = true;
+    [$("filter-btn"), $("condition"), $("clear")].forEach((el) => (el.disabled = true));
+    let secs = 0;
+    $("filter-msg").textContent = "AI가 메뉴를 고르는 중…";
+    const timer = setInterval(() => ($("filter-msg").textContent = `AI가 메뉴를 고르는 중… ${++secs}초`), 1000);
+    try {
+      const out = await api("POST", "/api/menus/filter", { condition: $("condition").value });
+      if (Array.isArray(out?.recommended)) {
+        recommended = out.recommended;
+        $("filter-msg").textContent = recommended.length ? "" : "조건에 맞는 메뉴가 없어요. [지우기]를 누르면 처음대로 돌아가요";
+        clearResult();
+        renderMenus();
+      } else {
+        // 예전 서버가 다른 모양으로 답한 경우: 추천 없이 그대로 두고 알려 줌
+        $("filter-msg").textContent = "AI 추천을 받지 못했어요. 서버를 다시 켜 주세요 (npm start)";
+      }
+    } catch (err) {
+      $("filter-msg").textContent = err.message; // 서버가 보낸 문장 그대로 (400 · 503)
+    }
+    clearInterval(timer);
+    aiBusy = false;
+    [$("filter-btn"), $("condition")].forEach((el) => (el.disabled = false));
+    $("clear").disabled = recommended === null;
+  });
+  // 조건을 다시 쓰면 지난 오류 문장은 안내 문장으로 되돌림
+  $("condition").addEventListener("input", () => {
+    if (aiBusy) return;
+    $("filter-msg").textContent = recommended === null ? HINT : ""; // 지난 오류 문장 지우기 (추천 결과 상자는 그대로)
+  });
+
+  // [조건 지우기]: 처음대로
+  $("clear").addEventListener("click", () => {
+    recommended = null;
+    $("condition").value = "";
+    $("filter-msg").textContent = "";
+    clearResult();
+    renderMenus();
+  });
+
+  // 처음 열 때: 자동 로그인 계정 · 등급 · 메뉴 · 최근 뽑기 불러오기
+  Promise.all([api("GET", "/api/me"), api("GET", "/api/grades"), api("GET", "/api/menus"), api("GET", "/api/draws")])
+    .then(([me, g, m, d]) => {
+      if (!me?.name || ![g, m, d].every(Array.isArray)) throw new Error(BAD_RESPONSE);
+      $("who").textContent = `${me.name} (자동 로그인)`;
+      [grades, menus, draws] = [g, m, d];
+      renderMenus();
+      renderDraws();
+    })
+    .catch((e) => {
+      showError(e.message);
+      $("filter-msg").textContent = e.message; // 위쪽 오류는 5초 뒤 사라지므로, 안 사라지는 자리에도 남김
+      $("result").textContent = "";
+    });
+</script>
+</body>
+</html>
