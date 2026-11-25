@@ -208,6 +208,7 @@ AI = 시설팀 수습 직원. 신고를 보고 심각도 · 유형을 **제안**
 
 ## 3-1 Vercel 배포 준비 (2026-11-25 · 코드만, **실제 배포는 확인 못 함**)
 
+- **배포 끝 (2026-11-25)**: https://temp-ai-study.vercel.app · 처음엔 화면 · API 모두 404(Vercel은 `api/` 폴더만 함수로 돌림 → 루트 `server.js`가 그냥 파일로 나감) → `api/index.js`(handle 한 줄) + `vercel.json`(`outputDirectory: src/public` · 모든 주소 `/api`로 rewrite · `includeFiles`) → API만 500(환경변수 없음) → 사용자가 Production 환경변수 3개 + Redeploy → 확인: `/` · `/misik/` 200 · 신고 40건(Supabase) · 담당 추천 · 안내문 스트리밍 · `/server.js` 404. `npm test` 68/68. 남은 사용자 몫: 휴대폰으로 신고 → AI 분류 → 승인 · 관찰 ①② · 운영(Rollback → Promote · Logs) · 끝나면 Delete Project.
 - 진행: GitHub https://github.com/phykn/temp-ai-study `main`에 push 끝(56개 파일 · 공개 저장소 · `.env` · `app.db` · `reference/` · `practice/` · `.crew/` 제외 · 키 검사함 · push 전 `npm test` 67/67). **Vercel Import · 환경변수 · Deploy는 사용자가 직접**: 크루의 내장 브라우저는 회사 정책으로 vercel.com이 막혀 있음(이 PC 네트워크로는 vercel.com 200).
 
 | 실습 | 한 일 | 확인 |

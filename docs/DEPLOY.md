@@ -1,6 +1,8 @@
 # DEPLOY.md — Vercel 배포 (8일차 M3 · 3-1)
 
-> 준비(코드)는 끝났고, **아래 1~8은 사용자가 직접** 합니다(GitHub · Vercel 계정, 환경변수 값 입력은 크루가 할 수 없음). 실제 Vercel 배포는 아직 한 번도 해 보지 못했습니다(**확인 못 함**). 근거 기획은 `docs/SPEC.md` 11절 · AC-D1.
+> **배포됨 (2026-11-25)**: https://temp-ai-study.vercel.app · GitHub `phykn/temp-ai-study` `main`에 push하면 자동 재배포. Vercel 화면 작업(Import · 환경변수 · Redeploy)은 사용자가 함(크루 브라우저는 회사 정책으로 vercel.com이 막힘). 근거 기획은 `docs/SPEC.md` 11절 · AC-D1.
+>
+> 배포 뒤 크루가 이 PC에서 확인함: `/` · `/misik/` 200 · `/api/reports` 40건(Supabase) · `/api/menus` · 담당 추천(AI + 도구) · 안내문 스트리밍(29조각) · `/server.js`는 404(코드가 안 보임). AI 분류 → [승인]은 Supabase 데이터가 바뀌므로 4번 확인에서 사람이 함.
 
 ## 0. 배포 전 점검
 
@@ -8,9 +10,10 @@
 
 | 파일 | 하는 일 (쉬운 말) |
 |---|---|
-| 루트 `server.js` | Vercel이 부르는 **입구**. 맨 아래 `export default handle`이 "요청 하나를 처리하는 함수"를 내보냄. Vercel은 서버를 직접 켜지 않고 이 함수만 부름. 내 컴퓨터에서 `node server.js` · `npm start`로 직접 실행할 때만 서버를 켬(`start()`) |
+| 루트 `server.js` | 입구. 맨 아래 `export default handle`이 "요청 하나를 처리하는 함수"를 내보냄. 내 컴퓨터에서 `node server.js` · `npm start`로 직접 실행할 때만 서버를 켬(`start()`) |
+| `api/index.js` | **Vercel이 실제로 부르는 함수**. Vercel은 `api/` 폴더의 파일만 서버 함수로 돌림(루트 `server.js`만 있으면 그냥 파일로 내보내서 전부 404였음). 내용은 루트 `server.js`의 `handle`을 그대로 내보내는 한 줄 |
 | `src/server.js`의 `handle` | 화면 파일 · API · 스트리밍 안내문을 모두 처리하는 함수. 로컬과 Vercel이 **같은 함수**를 씀 |
-| `vercel.json` | 서울 리전(`icn1`)에서 돌리라는 한 줄 |
+| `vercel.json` | 서울 리전(`icn1`) · 정적 파일은 `src/public`에서만(`outputDirectory` · 코드 파일이 주소로 안 보이게) · 나머지 주소는 모두 `/api` 함수로(`rewrites`) · 함수가 읽는 `data/*.json` · `src/migrations/` · `src/public/`을 함께 넣음(`includeFiles`) |
 | `.vercelignore` | 배포에서 뺄 것(`.env` · `data/app.db*` · `reference/` · `practice/` · `eval/` · `docs/` · `tests/`) |
 | `package.json`의 `engines` | Node를 `24.x`로 고정 |
 | `src/db.js` | Vercel에서는 SQLite 파일을 임시 폴더에 둠(함수 폴더는 쓸 수 없음) |
@@ -25,7 +28,7 @@
 
 | 올릴 것 | 올리지 않을 것 |
 |---|---|
-| `package.json` · `server.js` · `vercel.json` · `.gitignore` · `.vercelignore` | **`.env`** (키가 들어 있음) |
+| `package.json` · `server.js` · `api/index.js` · `vercel.json` · `.gitignore` · `.vercelignore` | **`.env`** (키가 들어 있음) |
 | `src/` 폴더 전체 | **`data/app.db`** (내 SQLite 파일) |
 | `data/`의 json 4개(`seed.json` · `misik_seed.json` · `assets.json` · `faq.json`) | `reference/` · `practice/` · `eval/` · `tests/` · `docs/` (올려도 `.vercelignore`가 빼지만 필요 없음) |
 
@@ -87,7 +90,9 @@ Vercel 프로젝트를 지웁니다(Settings → Delete Project). 로그인이 �
 | 목록 500 · Supabase 오류 401/403 | 공개 키(Publishable)를 넣음 | 서버 전용 키(Secret)로 바꾸고 Redeploy |
 | 신고 · 승인 오류 · "ai_hold"/"severity_by" 칸 없음 | Supabase에 `005` · `006` 미실행 | `src/migrations/supabase/`의 SQL을 SQL Editor에서 실행 |
 | AI 분류 503 | `ANTHROPIC_API_KEY`가 없거나 틀림 | 키 확인 후 Redeploy (키 없이는 AI만 안 됨) |
-| 화면 404 · Logs에 ENOENT | 함수에 `src/public/` · `data/*.json` · `src/migrations/`가 안 들어감 **(확인 못 함, 추정)** | Vercel 문서의 파일 포함 설정(`includeFiles`)을 `vercel.json`에 추가 |
+| 화면 · API 모두 404 · `/server.js`를 열면 코드가 보임 | `api/` 폴더에 함수가 없어 Vercel이 폴더를 그냥 파일로 내보냄 **(실제로 겪음)** | `api/index.js` · `vercel.json`의 `outputDirectory` · `rewrites` (지금은 들어 있음) |
+| 화면은 200인데 API만 500 `FUNCTION_INVOCATION_FAILED` | 환경변수가 없음 **(실제로 겪음)** | Settings → Environments → Production → Environment Variables에 넣고 **Redeploy** (넣기만 하면 반영 안 됨) |
+| API 500 · Logs에 ENOENT | 함수에 json · SQL 파일이 안 들어감 | `vercel.json`의 `includeFiles` 확인 (지금은 들어 있음) |
 | 안내문 · AI가 중간에 끊김 | Vercel 함수 시간 제한 **(확인 못 함, 추정)** | 요금제별 제한을 확인 · AI 대기 시간을 줄임 |
 | SQLite 쓰기 오류 | `VERCEL` 없이 읽기 전용 폴더에 쓰려 함 | Vercel이 `VERCEL`을 넣는지 확인(보통 자동) |
 | Node 버전 오류 | `engines`를 `>=24`로 씀 | `"24.x"`로 고정 |

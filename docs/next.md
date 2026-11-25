@@ -7,6 +7,7 @@
 - `npm test` 67개 통과 (고정 api 10개 + 미식 9개 + 화면 2개 + 신고 AI 10개 + 고장 주입 4개 + 챗봇 6개 + usage 시연 5개 + 평가 · 보류 · 후보 9개 + 판단 주체 6개 + 배포 6개) · 약 4초.
 - **M1 끝 · M2 크루 몫 끝**(2-1 · 미션 ①② · 2-2 ①의 복사와 빨간불 확인 · 2-2 ②③의 설명과 설정안 · 2-3 FB-1). **사용자 몫이 남음**: `practice/buggy`에서 `/goal` · 잠금 확인 2회 · `.claude/settings.json`에 Stop 훅 넣기 · 화면 스크린샷 · 콘솔 에러 0 확인(목록은 HANDOFF.md 'M2 사용자가 할 일'). 그 뒤 M3 3-1. Supabase에 `005_hold.sql` · `006_severity_by.sql` 실행 완료. 실습 순서 · 완료 기준은 `docs/DAY8_GUIDE.md` M1 표, 실습별 한 줄 기록은 `docs/HANDOFF.md`.
 - **M3 3-1 Vercel 배포 준비 끝(코드 · 문서), 실제 배포는 사용자 몫**: 할 일 목록은 HANDOFF.md '3-1', 순서는 `docs/DEPLOY.md`. 다음은 3-2 보안 점검.
+- **Vercel 배포 끝**: https://temp-ai-study.vercel.app (Supabase · 진짜 AI). `api/index.js` + `vercel.json`(outputDirectory · rewrites · includeFiles)로 함수가 돎. push하면 자동 재배포. 휴대폰 확인 · 관찰 ①② · 운영 · 끝나면 Delete Project는 사용자 몫. Vercel 로그 · 설정은 크루가 못 봄(브라우저 둘 다 회사 정책으로 vercel.com 차단) → 배포 확인은 curl(이 PC 네트워크는 됨, node fetch는 `--use-env-proxy --use-system-ca` 필요).
 - **GitHub 올리기 끝**: 이 폴더가 git 저장소가 됨(`main` → origin https://github.com/phykn/temp-ai-study, **공개**). `.gitignore`에 `reference/` · `practice/` · `.crew/` 추가. 크루 내장 브라우저는 vercel.com이 회사 정책으로 막힘 → Vercel Import · 환경변수 · Deploy는 사용자가 자기 브라우저로. 배포 주소를 받으면 크루가 curl로 확인(이 PC 네트워크로는 vercel.com 접속됨).
 
 ## 한 일 (순서대로)
