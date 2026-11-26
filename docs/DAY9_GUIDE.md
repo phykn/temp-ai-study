@@ -44,9 +44,29 @@ Claude = 신입, 나 = 판정하는 선배. "됐어요"가 아니라 기준과 �
 | 2-5 Deploy | 휴대폰 접속 → 신고 → [AI 분류] → [승인] | 40건 · 내 신고 · 제안 또는 '직접 처리해 주세요' |
 | 2-6 관찰 · 마무리 | ① 데이터 남나 ② 로그인 없으면 | 관찰 2줄 · 수업 후 프로젝트 삭제 · 키 폐기 |
 
+## 실습 2 결과 (2026-11-26 강사 리허설)
+- 배포 주소: https://temp-ai-study.vercel.app (GitHub `phykn/temp-ai-study` main push → Vercel 자동 배포 · 8일차 커밋 이력 위에 9일차 커밋)
+- Supabase(8일차 프로젝트): SQL 002 → 003 → 004 실행 완료 · 칸 4개(ai_status · answer · ai_corrected · ai_before) 추가 · 'none' 허용 · 기존 신고 40건 유지
+
+| 예제 | 확인한 것 | 결과 |
+|---|---|---|
+| 2-2 배포 전 점검 | `npm test` | 7/7 통과 (deploy.test.js 4개 포함) · api/index.js와 루트 server.js가 같은 handle |
+| 2-3 GitHub | 올라간 파일 | `.env` · 강의 PDF 없음 |
+| 2-4 환경변수 | 8일차 Vercel 값 그대로 | `SUPABASE_URL` · `SUPABASE_SECRET_KEY` · `ANTHROPIC_API_KEY` 이름 같음 (9일차는 `DB_MODE`를 읽지 않음) |
+| 2-5 휴대폰 흐름 | 신고 작성 → [AI 분류] → [승인] | 42번 "2층 천장에서 물이 샙니다" → 제안 긴급 · 건물(승인 전 배지 그대로) → 승인 후 긴급 · 건물 |
+
+**관찰 2줄 (2-6)**
+1. 데이터가 남나? → 남는다. 다시 배포해도 8일차 신고 40건이 그대로다. 저장이 Vercel이 아니라 Supabase에 되기 때문.
+2. 로그인이 없으면? → 주소만 알면 누구나 신고를 쓰고, 내 키로 AI를 부르고, 남의 신고를 [완료]할 수 있다(42번을 로그인 없이 PATCH → 200 · resolved). 연타 제한(1분 10번 → 429)은 비용 상한이 아니다.
+
+**마무리 (삭제는 하지 않고 방법만 확인)**
+- Vercel 프로젝트 삭제: Vercel → 프로젝트 → Settings → 맨 아래 Delete Project
+- 수업용 Anthropic 키: 수업 후 console에서 폐기 예정
+- 확인용 42번 신고는 남겨 둠 (상태 resolved)
+
 ## 강사 체크 (수업 전)
-- [ ] Supabase SQL Editor에서 `src/migrations/supabase/` 002 → 003 → 004 실행 — 8일차 DB에는 ai_status · ai_corrected · ai_before 칸이 없고, ai_severity · ai_category가 'none'을 허용하지 않음(004가 고침). 모두 여러 번 Run해도 안전
-- [ ] push 하면 8일차 배포(https://temp-ai-study.vercel.app)가 이 코드로 바뀜 — 8일차 이력을 덮을지, 브랜치로 둘지 결정
+- [x] Supabase SQL Editor에서 `src/migrations/supabase/` 002 → 003 → 004 실행 — 8일차 DB에는 ai_status · ai_corrected · ai_before 칸이 없고, ai_severity · ai_category가 'none'을 허용하지 않음(004가 고침). 모두 여러 번 Run해도 안전
+- [x] push 완료 — 8일차 배포 주소가 9일차 코드로 바뀜 (8일차 커밋 이력은 남아 있음)
 - [ ] `.env`의 키 중 이번에 필요한 건 `SUPABASE_URL` · `SUPABASE_SECRET_KEY` · `ANTHROPIC_API_KEY`뿐
 
 ## 막혔을 때
