@@ -1,13 +1,13 @@
 [
-  { "asset_id": "PL-1F-EP1", "name": "분전반 1호", "location": "생산동 1F 분전반실", "installed": "2012-06-01", "life_years": 20, "repairs": [{ "date": "2025-08-12", "note": "차단기 1개 교체" }] },
-  { "asset_id": "AC-1F-01", "name": "본관 출입 카드 리더기", "location": "사무동 1F 출입문", "installed": "2020-03-02", "life_years": 7, "repairs": [] },
-  { "asset_id": "AC-P1-01", "name": "생산동 출입 카드 리더기", "location": "생산동 1F 출입문", "installed": "2016-05-10", "life_years": 7, "repairs": [{ "date": "2025-02-03", "note": "리더기 모듈 재설치" }] },
-  { "asset_id": "PJ-3F-B", "name": "회의실 B 프로젝터", "location": "사무동 3F 회의실 B", "installed": "2021-09-01", "life_years": 6, "repairs": [{ "date": "2026-03-14", "note": "램프 교체" }] },
-  { "asset_id": "MN-4F-A", "name": "회의실 A 모니터", "location": "사무동 4F 회의실 A", "installed": "2023-01-16", "life_years": 6, "repairs": [] },
-  { "asset_id": "PR-3F-02", "name": "3층 복합기 2호", "location": "사무동 3F 복합기 코너", "installed": "2021-04-05", "life_years": 6, "repairs": [{ "date": "2026-06-22", "note": "급지 롤러 교체" }, { "date": "2026-10-08", "note": "용지 걸림 센서 청소" }] },
-  { "asset_id": "PR-5F-01", "name": "5층 프린터 1호", "location": "사무동 5F", "installed": "2024-02-19", "life_years": 6, "repairs": [] },
-  { "asset_id": "HV-O2-01", "name": "사무동 2층 냉난방기", "location": "사무동 2F 사무실", "installed": "2017-07-03", "life_years": 12, "repairs": [{ "date": "2025-12-01", "note": "실외기 팬 모터 교체" }] },
-  { "asset_id": "HV-P2-01", "name": "생산동 2층 공조기", "location": "생산동 2F 기계실", "installed": "2010-04-12", "life_years": 15, "repairs": [{ "date": "2024-09-30", "note": "벨트 교체" }, { "date": "2026-05-18", "note": "베어링 소음 점검" }] },
-  { "asset_id": "EV-O-02", "name": "사무동 엘리베이터 2호기", "location": "사무동", "installed": "2014-11-20", "life_years": 25, "repairs": [{ "date": "2026-08-04", "note": "정기 점검 · 도어 롤러 조정" }] },
-  { "asset_id": "EV-P1-02", "name": "생산동 화물 엘리베이터", "location": "생산동 1F", "installed": "2011-03-07", "life_years": 25, "repairs": [{ "date": "2026-09-15", "note": "도어 센서 교체" }] }
+  { "asset_id": "PR-3F-02", "name": "3층 복합기", "location": "사무동 3F 복사실", "warranty_until": "2027-03-31" },
+  { "asset_id": "PR-5F-01", "name": "5층 프린터", "location": "사무동 5F 복사실", "warranty_until": "2026-06-30" },
+  { "asset_id": "PJ-3F-B", "name": "회의실 B 프로젝터", "location": "사무동 3F 회의실 B", "warranty_until": "2027-09-30" },
+  { "asset_id": "MN-4F-A", "name": "회의실 A 모니터", "location": "사무동 4F 회의실 A", "warranty_until": "2028-01-31" },
+  { "asset_id": "HV-O2-01", "name": "2층 사무실 공조기", "location": "사무동 2F", "warranty_until": "2026-12-31" },
+  { "asset_id": "HV-P2-01", "name": "생산동 2층 공조기", "location": "생산동 2F 공조실", "warranty_until": "2027-05-31" },
+  { "asset_id": "AC-1F-01", "name": "본관 정문 카드 리더", "location": "사무동 1F 정문", "warranty_until": "2027-02-28" },
+  { "asset_id": "AC-P1-01", "name": "생산동 출입 카드 리더", "location": "생산동 1F 출입구", "warranty_until": "2026-08-31" },
+  { "asset_id": "EV-O-02", "name": "승객용 엘리베이터 2호기", "location": "사무동", "warranty_until": "2029-12-31" },
+  { "asset_id": "EV-P1-02", "name": "화물 엘리베이터", "location": "생산동 1F", "warranty_until": "2028-06-30" },
+  { "asset_id": "PL-1F-EP1", "name": "생산동 1층 분전반", "location": "생산동 1F 분전반실", "warranty_until": "2030-12-31" }
 ]

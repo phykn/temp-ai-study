@@ -1,0 +1,10 @@
+{
+  "name": "loan-loop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "비품 대여함 - 개발 루프 실습용",
+  "scripts": {
+    "test": "node --test",
+    "demo": "node scripts/demo.js"
+  }
+}

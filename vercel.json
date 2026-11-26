@@ -1,8 +1,8 @@
 {
   "regions": ["icn1"],
-  "outputDirectory": "src/public",
+  "outputDirectory": "public",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": {
-    "api/index.js": { "includeFiles": "{data/*.json,src/migrations/**,src/public/**}" }
+    "api/index.js": { "includeFiles": "{data/*.json,src/prompts/**,public/**}" }
   }
 }

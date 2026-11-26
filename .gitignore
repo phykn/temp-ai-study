@@ -1,11 +1,7 @@
 .env
 .env.*
 !.env.example
-data/app.db
-data/app.db-*
 node_modules/
 eval/candidates.json
-# 공개 저장소에 올리지 않음: 받은 원본 자료(백업) · 2-2 실습 복사본 · 크루 작업 메모
-reference/
-practice/
-.crew/
+# 강의 PDF(6.5MB · 수업 자료)는 저장소에 올리지 않음
+docs/*.pdf

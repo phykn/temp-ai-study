@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node --test 1>&2 || exit 2"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(node --test:*)",
+      "PowerShell(npm test:*)",
+      "PowerShell(node --test:*)"
+    ],
+    "deny": [
+      "Edit(./.claude/**)",
+      "Write(./.claude/**)",
+      "Edit(./tests/base.test.js)",
+      "Write(./tests/base.test.js)"
+    ]
+  }
+}

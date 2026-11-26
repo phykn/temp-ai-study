@@ -1,9 +1,6 @@
-# Vercel 배포에서 뺄 것 (SPEC 11절). 서버가 읽는 것은 src/ 와 data/*.json 뿐이다
+# Vercel 배포에서 뺄 것. 서버가 읽는 것은 src/ 와 data/*.json 뿐이다
 .env
 .env.*
-data/app.db*
-reference/
 practice/
-eval/
 docs/
 tests/

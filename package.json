@@ -4,10 +4,11 @@
   "private": true,
   "description": "SDI 시설 신고함 · 8일차 실습 · 설치할 패키지 없음 · Node 24",
   "type": "module",
-  "engines": { "node": "24.x" },
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
-    "start": "node --use-env-proxy --use-system-ca --env-file-if-exists=.env server.js",
-    "test": "node --test tests/",
-    "peek": "node peek.js"
+    "start": "node --env-file-if-exists=.env server.js",
+    "test": "node --test tests/"
   }
 }
